@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disconnect Four</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-template-rows: repeat(6, 50px);
+            gap: 5px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .cell.red {
+            background-color: red;
+        }
+        .cell.yellow {
+            background-color: yellow;
+        }
+        .status {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        .controls {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="status">Player 1's turn (Red)</div>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+    <div class="board" id="board">
+        <!-- 42 cells for the 7x6 grid -->
+        <div class="cell" data-column="0"></div>
+        <div class="cell" data-column="1"></div>
+        <div class="cell" data-column="2"></div>
+        <div class="cell" data-column="3"></div>
+        <div class="cell" data-column="4"></div>
+        <div class="cell" data-column="5"></div>
+        <div class="cell" data-column="6"></div>
+        <!-- Repeat above for 6 rows -->
+        <!-- ... -->
+    </div>
+    <script>
+        const columns = 7;
+        const rows = 6;
+        let board = Array(rows).fill(null).map(() => Array(columns).fill(null));
+        let currentPlayer = 'red';
+        const statusDisplay = document.querySelector('.status');
+
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        function handleCellClick(e) {
+            const column = e.target.getAttribute('data-column');
+            for (let row = rows - 1; row >= 0; row--) {
+                if (!board[row][column]) {
+                    board[row][column] = currentPlayer;
+                    updateBoard();
+                    if (checkWin(row, column)) {
+                        statusDisplay.textContent = `Player ${currentPlayer === 'red' ? 1 : 2} wins!`;
+                        endGame();
+                    } else if (checkDraw()) {
+                        statusDisplay.textContent = 'Draw!';
+                        endGame();
+                    } else {
+                        currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+                        statusDisplay.textContent = `Player ${currentPlayer === 'red' ? 1 : 2}'s turn (${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)})`;
+                    }
+                    break;
+                }
+            }
+        }
+
+        function updateBoard() {
+            document.querySelectorAll('.cell').forEach((cell, index) => {
+                const column = index % columns;
+                const row = Math.floor(index / columns);
+                cell.className = 'cell' + (board[row][column] ? ' ' + board[row][column] : '');
+            });
+        }
+
+        function checkWin(row, col) {
+            return checkDirection(row, col, 1, 0) || // Horizontal
+                   checkDirection(row, col, 0, 1) || // Vertical
+                   checkDirection(row, col, 1, 1) || // Diagonal \
+                   checkDirection(row, col, 1, -1);  // Diagonal /
+        }
+
+        function checkDirection(row, col, rowDir, colDir) {
+            let total = 0;
+            for (let i = -3; i <= 3; i++) {
+                const r = row + i * rowDir;
+                const c = col + i * colDir;
+                if (r >= 0 && r < rows && c >= 0 && c < columns && board[r][c] === currentPlayer) {
+                    total++;
+                    if (total >= 4) {
+                        return true;
+                    }
+                } else {
+                    total = 0;
+                }
+            }
+            return false;
+        }
+
+        function checkDraw() {
+            return board.flat().every(cell => cell);
+        }
+
+        function endGame() {
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.removeEventListener('click', handleCellClick);
+            });
+        }
+
+        function resetGame() {
+            board = Array(rows).fill(null).map(() => Array(columns).fill(null));
+            currentPlayer = 'red';
+            statusDisplay.textContent = "Player 1's turn (Red)";
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.className = 'cell';
+                cell.addEventListener('click', handleCellClick);
+            });
+        }
+    </script>
+</body>
+</html>
