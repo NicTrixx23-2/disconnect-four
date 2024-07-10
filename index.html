@@ -85,7 +85,7 @@
                     board[row][column] = currentPlayer;
                     updateBoard();
                     if (checkWin(row, column)) {
-                        statusDisplay.textContent = `Player ${currentPlayer === 'red' ? 1 : 2} wins!`;
+                        statusDisplay.textContent = `Player ${currentPlayer === 'red' ? 1 : 2} loses!`;
                         endGame();
                     } else if (checkDraw()) {
                         statusDisplay.textContent = 'Draw!';
